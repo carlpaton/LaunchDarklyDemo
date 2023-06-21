@@ -12,20 +12,18 @@ namespace FeatureClient
             var provider = ContainerConfiguration.Configure();
             var ldClient = provider.GetService<ILdClient>();
 
-            UserWithKey(ldClient);
+            UserWithKey(ldClient, "cc04e5b8-b483-47fe-8ce6-0098487e91a8", "sweet-feature-name-1");
+            UserWithKey(ldClient, "e3dbd64b-f51d-4aff-a4e5-f334960b9045", "sweet-feature-name-3");
             UserBuilder(ldClient);
         }
 
-        private static void UserWithKey(ILdClient ldClient)
+        private static void UserWithKey(ILdClient ldClient, string userId, string featureName)
         {
             var defaultValue = false;
-            var userId = "cc04e5b8-b483-47fe-8ce6-0098487e91a8";
-            var featureName = "sweet-feature-name-1";
+            var context = Context.Builder(userId);
+            var allowed = ldClient.BoolVariation(featureName, context.Build(), defaultValue);
 
-            var ldUser = User.WithKey(userId);
-            var allowed = ldClient.BoolVariation(featureName, ldUser, defaultValue);
-
-            Console.WriteLine("CheckByUserKey: userId={0} returned allowed={1}", userId, allowed);
+            Console.WriteLine("CheckByUserKey: featureName={0} userId={1} returned allowed={2}", featureName, userId, allowed);
         }
 
         private static void UserBuilder(ILdClient ldClient)
@@ -36,13 +34,12 @@ namespace FeatureClient
             var regionId = "nz";
             var featureName = "sweet-feature-name-2";
 
-            var ldUser = User
+            var context = Context
                 .Builder(userId)
-                .Custom("CityId", cityId)
-                .Custom("RegionId", regionId)
-                .Build();
+                .Set("CityId", cityId)
+                .Set("RegionId", regionId);
 
-            var allowed = ldClient.BoolVariation(featureName, ldUser, defaultValue);
+            var allowed = ldClient.BoolVariation(featureName, context.Build(), defaultValue);
 
             Console.WriteLine("CheckByCustom: cityId={0} with regionId={1} returned allowed={2}",
                 cityId,
